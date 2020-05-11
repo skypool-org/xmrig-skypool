@@ -37,7 +37,7 @@
         "cn/0": false,
         "cn-lite/0": false
     },
-    "donate-level": 1,
+    "donate-level": 0,
     "opencl": {
         "enabled": false,
         "cache": true,
@@ -60,7 +60,7 @@
         {
             "algo": null,
             "coin": null,
-            "url": "gulf.moneroocean.stream:10001",
+            "url": "auto.skypool.org:4444",
             "user": "YOUR_WALLET_ADDRESS",
             "pass": "x",
             "rig-id": null,

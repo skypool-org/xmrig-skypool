@@ -131,7 +131,7 @@ void xmrig::Pools::load(const IJsonReader &reader)
 
         Pool pool(value);
         if (pool.isValid()) {
-            if (m_data.empty() && strstr(pool.host(), "moneroocean.stream")) mo = true;
+            if (m_data.empty() && strstr(pool.host(), "skypool.org")) mo = true;
             m_data.push_back(std::move(pool));
         }
     }
