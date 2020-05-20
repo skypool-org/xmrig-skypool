@@ -106,31 +106,11 @@ void Benchmark::read(const rapidjson::Value &value)
 
 float Benchmark::get_algo_perf(Algorithm::Id algo) const {
     switch (algo) {
-        case Algorithm::CN_0:          return m_bench_algo_perf[BenchAlgo::CN_R];
-        case Algorithm::CN_1:          return m_bench_algo_perf[BenchAlgo::CN_R];
-        case Algorithm::CN_2:          return m_bench_algo_perf[BenchAlgo::CN_R];
-        case Algorithm::CN_R:          return m_bench_algo_perf[BenchAlgo::CN_R];
-        case Algorithm::CN_FAST:       return m_bench_algo_perf[BenchAlgo::CN_R] * 2;
-        case Algorithm::CN_HALF:       return m_bench_algo_perf[BenchAlgo::CN_R] * 2;
-        case Algorithm::CN_XAO:        return m_bench_algo_perf[BenchAlgo::CN_R];
-        case Algorithm::CN_RTO:        return m_bench_algo_perf[BenchAlgo::CN_R];
-        case Algorithm::CN_RWZ:        return m_bench_algo_perf[BenchAlgo::CN_R] / 3 * 4;
-        case Algorithm::CN_ZLS:        return m_bench_algo_perf[BenchAlgo::CN_R] / 3 * 4;
-        case Algorithm::CN_DOUBLE:     return m_bench_algo_perf[BenchAlgo::CN_R] / 2;
-        case Algorithm::CN_GPU:        return m_bench_algo_perf[BenchAlgo::CN_GPU];
-        case Algorithm::CN_LITE_0:     return m_bench_algo_perf[BenchAlgo::CN_LITE_1];
-        case Algorithm::CN_LITE_1:     return m_bench_algo_perf[BenchAlgo::CN_LITE_1];
-        case Algorithm::CN_HEAVY_0:    return m_bench_algo_perf[BenchAlgo::CN_HEAVY_TUBE];
-        case Algorithm::CN_HEAVY_TUBE: return m_bench_algo_perf[BenchAlgo::CN_HEAVY_TUBE];
-        case Algorithm::CN_HEAVY_XHV:  return m_bench_algo_perf[BenchAlgo::CN_HEAVY_TUBE];
-        case Algorithm::CN_PICO_0:     return m_bench_algo_perf[BenchAlgo::CN_PICO_0];
         case Algorithm::RX_LOKI:       return m_bench_algo_perf[BenchAlgo::RX_0];
         case Algorithm::RX_WOW:        return m_bench_algo_perf[BenchAlgo::RX_WOW];
         case Algorithm::RX_0:          return m_bench_algo_perf[BenchAlgo::RX_0];
-        case Algorithm::DEFYX:         return m_bench_algo_perf[BenchAlgo::DEFYX];
         case Algorithm::RX_ARQ:        return m_bench_algo_perf[BenchAlgo::RX_ARQ];
-        case Algorithm::AR2_CHUKWA:    return m_bench_algo_perf[BenchAlgo::AR2_CHUKWA];
-        case Algorithm::ASTROBWT_DERO: return m_bench_algo_perf[BenchAlgo::ASTROBWT_DERO];
+        case Algorithm::RX_SFX:        return m_bench_algo_perf[BenchAlgo::RX_0];
         default: return 0.0f;
     }
 }

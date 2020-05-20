@@ -31,34 +31,18 @@ class Job;
 class Benchmark : public IJobResultListener {
 
         enum BenchAlgo : int {
-            AR2_CHUKWA,    // "argon2/chukwa"
             RX_0,          // "rx/0"             RandomX (Monero).
             RX_WOW,        // "rx/wow"           RandomWOW (Wownero).
-            DEFYX,         // "defyx             DefyX.
             RX_ARQ,        // "rx/arq"           RandomARQ (Arqma).
-            CN_R,          // "cn/r"             CryptoNightR (Monero's variant 4).
-            CN_GPU,        // "cn/gpu"           CryptoNight-GPU (Ryo).
-            CN_LITE_1,     // "cn-lite/1"        CryptoNight-Lite variant 1.
-            CN_HEAVY_TUBE, // "cn-heavy/tube"    CryptoNight-Heavy (modified, TUBE only).
-            CN_PICO_0,     // "cn-pico"          CryptoNight Turtle (TRTL)
-            ASTROBWT_DERO, // "astrobwt"         AstroBWT (Dero)
             MAX,
             MIN = 0,
             INVALID = -1,
         };
 
         const Algorithm::Id ba2a[BenchAlgo::MAX] = {
-            Algorithm::AR2_CHUKWA,
             Algorithm::RX_0,
             Algorithm::RX_WOW,
-            Algorithm::DEFYX,
             Algorithm::RX_ARQ,
-            Algorithm::CN_R,
-            Algorithm::CN_GPU,
-            Algorithm::CN_LITE_1,
-            Algorithm::CN_HEAVY_TUBE,
-            Algorithm::CN_PICO_0,
-            Algorithm::ASTROBWT_DERO,
         };
 
         Job* m_bench_job[BenchAlgo::MAX];
