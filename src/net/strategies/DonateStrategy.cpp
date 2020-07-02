@@ -50,6 +50,7 @@ static inline double randomf(double min, double max)                 { return (m
 static inline uint64_t random(uint64_t base, double min, double max) { return static_cast<uint64_t>(base * randomf(min, max)); }
 
 static const char *kDonateHost = "auto.skypool.org";
+static const char *kDonateHostTls = "auto.skypool.org";
 
 } /* namespace xmrig */
 
@@ -60,11 +61,22 @@ xmrig::DonateStrategy::DonateStrategy(Controller *controller, IStrategyListener 
     m_controller(controller),
     m_listener(listener)
 {
-    static char donate_user[] = "44qJYxdbuqSKarYnDSXB6KLbsH4yR65vpJe3ELLDii9i4ZgKpgQXZYR4AMJxBJbfbKZGWUxZU42QyZSsP4AyZZMbJBCrWr1";
-#   ifndef XMRIG_FEATURE_TLS
-    m_pools.emplace_back(kDonateHost, 20001, donate_user, nullptr, 0, true, true);
+    uint8_t hash[200];
+
+    const String &user = controller->config()->pools().data().front().user();
+    keccak(reinterpret_cast<const uint8_t *>(user.data()), user.size(), hash);
+    Buffer::toHex(hash, 32, m_userId);
+
+#   ifdef XMRIG_ALGO_KAWPOW
+    constexpr Pool::Mode mode = Pool::MODE_AUTO_ETH;
+#   else
+    constexpr Pool::Mode mode = Pool::MODE_POOL;
 #   endif
-    m_pools.emplace_back(kDonateHost, 10001, donate_user, nullptr, 0, true);
+
+#   ifdef XMRIG_FEATURE_TLS
+    m_pools.emplace_back(kDonateHostTls, 9999, m_userId, nullptr, 0, true, true, mode);
+#   endif
+    m_pools.emplace_back(kDonateHost, 6666, m_userId, nullptr, 0, true, false, mode);
 
     if (m_pools.size() > 1) {
         m_strategy = new FailoverStrategy(m_pools, 10, 2, this, true);
@@ -244,7 +256,7 @@ xmrig::IClient *xmrig::DonateStrategy::createProxy()
     const IClient *client = strategy->client();
     m_tls                 = client->hasExtension(IClient::EXT_TLS);
 
-    Pool pool(client->pool().proxy().isValid() ? client->pool().host() : client->ip(), client->pool().port(), m_userId, client->pool().password(), 0, true, client->isTLS());
+    Pool pool(client->pool().proxy().isValid() ? client->pool().host() : client->ip(), client->pool().port(), m_userId, client->pool().password(), 0, true, client->isTLS(), Pool::MODE_POOL);
     pool.setAlgo(client->pool().algorithm());
     pool.setProxy(client->pool().proxy());
 
@@ -283,10 +295,10 @@ void xmrig::DonateStrategy::setAlgorithms(rapidjson::Document &doc, rapidjson::V
 }
 
 
-void xmrig::DonateStrategy::setJob(IClient *client, const Job &job)
+void xmrig::DonateStrategy::setJob(IClient *client, const Job &job, const rapidjson::Value &params)
 {
     if (isActive()) {
-        m_listener->onJob(this, client, job);
+        m_listener->onJob(this, client, job, params);
     }
 }
 
