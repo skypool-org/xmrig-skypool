@@ -28,6 +28,7 @@
 
 #include "backend/cpu/CpuThreads.h"
 #include "base/crypto/Algorithm.h"
+#include "base/tools/Object.h"
 #include "crypto/common/Assembly.h"
 
 
@@ -37,6 +38,8 @@ namespace xmrig {
 class ICpuInfo
 {
 public:
+    XMRIG_DISABLE_COPY_MOVE(ICpuInfo)
+
     enum Vendor : uint32_t {
         VENDOR_UNKNOWN,
         VENDOR_INTEL,
@@ -62,9 +65,11 @@ public:
         FLAG_SSSE3,
         FLAG_XOP,
         FLAG_POPCNT,
+        FLAG_CAT_L3,
         FLAG_MAX
     };
 
+    ICpuInfo()          = default;
     virtual ~ICpuInfo() = default;
 
 #   if defined(__x86_64__) || defined(_M_AMD64) || defined (__arm64__) || defined (__aarch64__)
@@ -79,6 +84,7 @@ public:
     virtual bool hasAVX2() const                                                    = 0;
     virtual bool hasBMI2() const                                                    = 0;
     virtual bool hasOneGbPages() const                                              = 0;
+    virtual bool hasCatL3() const                                                   = 0;
     virtual const char *backend() const                                             = 0;
     virtual const char *brand() const                                               = 0;
     virtual CpuThreads threads(const Algorithm &algorithm, uint32_t limit) const    = 0;
