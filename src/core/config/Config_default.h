@@ -51,7 +51,12 @@ R"===(
     "randomx": {
         "init": -1,
         "mode": "auto",
-        "numa": true
+        "1gb-pages": false,
+        "rdmsr": true,
+        "wrmsr": true,
+        "cache_qos": false,
+        "numa": true,
+        "scratchpad_prefetch_mode": 1
     },
     "cpu": {
         "enabled": true,
@@ -109,7 +114,8 @@ R"===(
     "retry-pause": 5,
     "syslog": false,
     "user-agent": null,
-    "watch": true
+    "watch": true,
+    "pause-on-battery": false
 }
 )===";
 #endif

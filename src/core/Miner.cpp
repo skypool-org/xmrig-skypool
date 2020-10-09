@@ -38,6 +38,7 @@
 #include "base/kernel/Platform.h"
 #include "base/net/stratum/Job.h"
 #include "base/tools/Object.h"
+#include "base/tools/Profiler.h"
 #include "base/tools/Timer.h"
 #include "core/config/Config.h"
 #include "core/Controller.h"
@@ -120,7 +121,7 @@ public:
         for (int i = 0; i < Algorithm::MAX; ++i) {
             const Algorithm algo(static_cast<Algorithm::Id>(i));
 
-            if (isEnabled(algo)) {
+            if (algo.isValid() && isEnabled(algo)) {
                 algorithms.push_back(algo);
             }
         }
@@ -267,6 +268,44 @@ public:
             h = "MH/s";
         }
 
+#       ifdef XMRIG_FEATURE_PROFILING
+        ProfileScopeData* data[ProfileScopeData::MAX_DATA_COUNT];
+
+        const uint32_t n = std::min<uint32_t>(ProfileScopeData::s_dataCount, ProfileScopeData::MAX_DATA_COUNT);
+        memcpy(data, ProfileScopeData::s_data, n * sizeof(ProfileScopeData*));
+
+        std::sort(data, data + n, [](ProfileScopeData* a, ProfileScopeData* b) {
+            return strcmp(a->m_threadId, b->m_threadId) < 0;
+        });
+
+        for (uint32_t i = 0; i < n;)
+        {
+            uint32_t n1 = i;
+            while ((n1 < n) && (strcmp(data[i]->m_threadId, data[n1]->m_threadId) == 0)) {
+                ++n1;
+            }
+
+            std::sort(data + i, data + n1, [](ProfileScopeData* a, ProfileScopeData* b) {
+                return a->m_totalCycles > b->m_totalCycles;
+            });
+
+            for (uint32_t j = i; j < n1; ++j) {
+                ProfileScopeData* p = data[j];
+                LOG_INFO("%s Thread %6s | %-30s | %7.3f%% | %9.0f ns",
+                    Tags::profiler(),
+                    p->m_threadId,
+                    p->m_name,
+                    p->m_totalCycles * 100.0 / data[i]->m_totalCycles,
+                    p->m_totalCycles / p->m_totalSamples * 1e9 / ProfileScopeData::s_tscSpeed
+                );
+            }
+
+            LOG_INFO("%s --------------|--------------------------------|----------|-------------", Tags::profiler());
+
+            i = n1;
+        }
+#       endif
+
         LOG_INFO("%s " WHITE_BOLD("speed") " 10s/60s/15m " CYAN_BOLD("%s") CYAN(" %s %s ") CYAN_BOLD("%s") " max " CYAN_BOLD("%s %s"),
                  Tags::miner(),
                  Hashrate::format(speed[0] * scale,                 num,          sizeof(num) / 4),
@@ -287,6 +326,7 @@ public:
     bool active         = false;
     bool enabled        = true;
     bool reset          = true;
+    bool battery_power  = false;
     Controller *controller;
     Job job;
     mutable std::map<Algorithm::Id, double> maxHashrate;
@@ -309,6 +349,10 @@ xmrig::Miner::Miner(Controller *controller)
         Platform::setProcessPriority(priority);
         Platform::setThreadPriority(std::min(priority + 1, 5));
     }
+
+#   ifdef XMRIG_FEATURE_PROFILING
+    ProfileScopeData::Init();
+#   endif
 
 #   ifdef XMRIG_ALGO_RANDOMX
     Rx::init(this);
@@ -429,13 +473,24 @@ void xmrig::Miner::setEnabled(bool enabled)
         return;
     }
 
+    if (d_ptr->battery_power && enabled) {
+        LOG_INFO("%s " YELLOW_BOLD("can't resume while on battery power"), Tags::miner());
+
+        return;
+    }
+
     d_ptr->enabled = enabled;
 
     if (enabled) {
-        LOG_INFO(GREEN_BOLD("resumed"));
+        LOG_INFO("%s " GREEN_BOLD("resumed"), Tags::miner());
     }
     else {
-        LOG_INFO(YELLOW_BOLD("paused") ", press " MAGENTA_BG_BOLD(" r ") " to resume");
+        if (d_ptr->battery_power) {
+            LOG_INFO("%s " YELLOW_BOLD("paused"), Tags::miner());
+        }
+        else {
+            LOG_INFO("%s " YELLOW_BOLD("paused") ", press " MAGENTA_BG_BOLD(" r ") " to resume", Tags::miner());
+        }
     }
 
     if (!d_ptr->active) {
@@ -538,6 +593,20 @@ void xmrig::Miner::onTimer(const Timer *)
     }
 
     d_ptr->ticks++;
+
+    if (d_ptr->controller->config()->isPauseOnBattery()) {
+        const bool battery_power = Platform::isOnBatteryPower();
+        if (battery_power && d_ptr->enabled) {
+            LOG_INFO("%s " YELLOW_BOLD("on battery power"), Tags::miner());
+            d_ptr->battery_power = true;
+            setEnabled(false);
+        }
+        else if (!battery_power && !d_ptr->enabled && d_ptr->battery_power) {
+            LOG_INFO("%s " GREEN_BOLD("on AC power"), Tags::miner());
+            d_ptr->battery_power = false;
+            setEnabled(true);
+        }
+    }
 }
 
 

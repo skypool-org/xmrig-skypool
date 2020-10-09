@@ -257,4 +257,5 @@ void xmrig::Config::getJSON(rapidjson::Document &doc) const
     doc.AddMember("algo-perf",                  m_benchmark.toJSON(doc), allocator);
     doc.AddMember("rebench-algo",               isRebenchAlgo(), allocator);
     doc.AddMember("bench-algo-time",            benchAlgoTime(), allocator);
+    doc.AddMember(StringRef(kPauseOnBattery),           isPauseOnBattery(), allocator);
 }

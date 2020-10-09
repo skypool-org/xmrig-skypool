@@ -22,6 +22,8 @@
  */
 
 
+#include <IOKit/IOKitLib.h>
+#include <IOKit/ps/IOPowerSources.h>
 #include <mach/thread_act.h>
 #include <mach/thread_policy.h>
 #include <stdio.h>
@@ -29,6 +31,7 @@
 #include <sys/resource.h>
 #include <uv.h>
 #include <thread>
+#include <fstream>
 
 
 #include "base/kernel/Platform.h"
@@ -107,3 +110,8 @@ void xmrig::Platform::setThreadPriority(int priority)
     setpriority(PRIO_PROCESS, 0, prio);
 }
 
+
+bool xmrig::Platform::isOnBatteryPower()
+{
+    return IOPSGetTimeRemainingEstimate() != kIOPSTimeRemainingUnlimited;
+}

@@ -93,10 +93,11 @@ public:
     inline Algorithm() = default;
     inline Algorithm(const char *algo) : m_id(parse(algo)) {}
     inline Algorithm(Id id) : m_id(id)                     {}
+    Algorithm(const rapidjson::Value &value);
 
     inline bool isCN() const                          { auto f = family(); return f == CN || f == CN_LITE || f == CN_HEAVY || f == CN_PICO; }
     inline bool isEqual(const Algorithm &other) const { return m_id == other.m_id; }
-    inline bool isValid() const                       { return m_id != INVALID; }
+    inline bool isValid() const                       { return m_id != INVALID && family() != UNKNOWN; }
     inline const char *name() const                   { return name(false); }
     inline const char *shortName() const              { return name(true); }
     inline Family family() const                      { return family(m_id); }
@@ -109,6 +110,7 @@ public:
     inline operator Algorithm::Id() const                 { return m_id; }
 
     rapidjson::Value toJSON() const;
+    rapidjson::Value toJSON(rapidjson::Document &doc) const;
     size_t l2() const;
     size_t l3() const;
     uint32_t maxIntensity() const;

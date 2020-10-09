@@ -249,6 +249,7 @@ void xmrig::BaseTransform::transform(rapidjson::Document &doc, int key, const ch
     case IConfig::DaemonKey:      /* --daemon */
     case IConfig::RebenchAlgoKey: /* --rebench-algo */
     case IConfig::VerboseKey:     /* --verbose */
+    case IConfig::PauseOnBatteryKey: /* --pause-on-battery */
         return transformBoolean(doc, key, true);
 
     case IConfig::ColorKey:          /* --no-color */
@@ -309,6 +310,9 @@ void xmrig::BaseTransform::transformBoolean(rapidjson::Document &doc, int key, b
 
     case IConfig::NoTitleKey: /* --no-title */
         return set(doc, BaseConfig::kTitle, enable);
+
+    case IConfig::PauseOnBatteryKey: /* --pause-on-battery */
+        return set(doc, BaseConfig::kPauseOnBattery, enable);
 
     default:
         break;
