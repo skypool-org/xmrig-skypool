@@ -48,11 +48,11 @@ extern "C" {
 
 RandomX_ConfigurationScala::RandomX_ConfigurationScala()
 {
-	ArgonMemory       = 131072;
+	// ArgonMemory       = 131072;
         ArgonIterations   = 2;
 	ArgonSalt         = "DefyXScala\x13";
-        CacheAccesses     = 2;
-        DatasetBaseSize   = 33554432;
+        // CacheAccesses     = 2;
+        // DatasetBaseSize   = 33554432;
         ProgramSize       = 64;
         ProgramIterations = 1024;
 	ProgramCount      = 4;
@@ -103,10 +103,10 @@ extern "C" {
 		machine->resetRoundingMode();
 		for (uint32_t chain = 0; chain < RandomX_CurrentConfig.ProgramCount - 1; ++chain) {
 			machine->run(&tempHash);
-			rx_blake2b(tempHash, sizeof(tempHash), machine->getRegisterFile(), sizeof(randomx::RegisterFile), nullptr, 0);
+			rx_blake2b(tempHash, sizeof(tempHash), machine->getRegisterFile(), sizeof(randomx::RegisterFile));
 		}
 		machine->run(&tempHash);
-		machine->getFinalResult(output, RANDOMX_HASH_SIZE);
+		machine->getFinalResult(output);
 	}
 
 	void defyx_calculate_hash_first(randomx_vm* machine, uint64_t (&tempHash)[8], const void* input, size_t inputSize) {
@@ -120,7 +120,7 @@ extern "C" {
 		machine->resetRoundingMode();
 		for (uint32_t chain = 0; chain < RandomX_CurrentConfig.ProgramCount - 1; ++chain) {
 			machine->run(&tempHash);
-			rx_blake2b(tempHash, sizeof(tempHash), machine->getRegisterFile(), sizeof(randomx::RegisterFile), nullptr, 0);
+			rx_blake2b(tempHash, sizeof(tempHash), machine->getRegisterFile(), sizeof(randomx::RegisterFile));
 		}
 		machine->run(&tempHash);
 
@@ -128,7 +128,7 @@ extern "C" {
 		//rx_blake2b(tempHash, sizeof(tempHash), nextInput, nextInputSize, nullptr, 0);
 		sipesh(tempHash, sizeof(tempHash), nextInput, nextInputSize, nextInput, nextInputSize, 0, 0);
 		k12(nextInput, nextInputSize, tempHash);
-		machine->hashAndFill(output, RANDOMX_HASH_SIZE, tempHash);
+		machine->hashAndFill(output, tempHash);
 	}
 
 }
