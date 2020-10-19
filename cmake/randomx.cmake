@@ -40,25 +40,12 @@ if (WITH_RANDOMX)
         src/crypto/rx/RxDataset.cpp
         src/crypto/rx/RxQueue.cpp
         src/crypto/rx/RxVm.cpp
-
-        src/crypto/defyx/align.h
-        src/crypto/defyx/brg_endian.h
-        src/crypto/defyx/defyx.cpp
-        src/crypto/defyx/defyx.h
-        src/crypto/defyx/KangarooTwelve.c
-        src/crypto/defyx/KangarooTwelve.h
-        src/crypto/defyx/KeccakP-1600-reference.c
-        src/crypto/defyx/KeccakP-1600-SnP.h
-        src/crypto/defyx/KeccakSponge-common.h
-        src/crypto/defyx/KeccakSponge.inc
-        src/crypto/defyx/KeccakSpongeWidth1600.c
-        src/crypto/defyx/KeccakSpongeWidth1600.h
-        src/crypto/defyx/Phases.h
-        src/crypto/defyx/sha256.c
-        src/crypto/defyx/sha256.h
-        src/crypto/defyx/sysendian.h
-        src/crypto/defyx/yescrypt.h
-        src/crypto/defyx/yescrypt-best.c
+        src/crypto/randomx/defyx/KangarooTwelve.c
+        src/crypto/randomx/defyx/KeccakP-1600-reference.c
+        src/crypto/randomx/defyx/KeccakSpongeWidth1600.c
+        src/crypto/randomx/defyx/yescrypt-best.c
+        src/crypto/randomx/panthera/sha256.c
+        src/crypto/randomx/panthera/yespower-opt.c
     )
 
     if (CMAKE_C_COMPILER_ID MATCHES MSVC)

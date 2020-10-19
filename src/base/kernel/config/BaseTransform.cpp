@@ -250,20 +250,30 @@ void xmrig::BaseTransform::transform(rapidjson::Document &doc, int key, const ch
     case IConfig::PrintTimeKey:   /* --print-time */
     case IConfig::HttpPort:       /* --http-port */
     case IConfig::DonateLevelKey: /* --donate-level */
+#   ifdef XMRIG_FEATURE_HTTP
     case IConfig::DaemonPollKey:  /* --daemon-poll-interval */
+#   endif
+#   ifdef XMRIG_FEATURE_BENCHMARK
     case IConfig::BenchAlgoTimeKey: /* --bench-algo-time */
+#   endif
         return transformUint64(doc, key, static_cast<uint64_t>(strtol(arg, nullptr, 10)));
 
     case IConfig::BackgroundKey:  /* --background */
     case IConfig::SyslogKey:      /* --syslog */
     case IConfig::KeepAliveKey:   /* --keepalive */
     case IConfig::NicehashKey:    /* --nicehash */
+#   ifdef XMRIG_FEATURE_TLS
     case IConfig::TlsKey:         /* --tls */
+#   endif
     case IConfig::DryRunKey:      /* --dry-run */
+#   ifdef XMRIG_FEATURE_HTTP
     case IConfig::HttpEnabledKey: /* --http-enabled */
     case IConfig::DaemonKey:      /* --daemon */
-    case IConfig::RebenchAlgoKey: /* --rebench-algo */
+#   endif
     case IConfig::VerboseKey:     /* --verbose */
+#   ifdef XMRIG_FEATURE_BENCHMARK
+    case IConfig::RebenchAlgoKey: /* --rebench-algo */
+#   endif
     case IConfig::PauseOnBatteryKey: /* --pause-on-battery */
         return transformBoolean(doc, key, true);
 
@@ -317,14 +327,16 @@ void xmrig::BaseTransform::transformBoolean(rapidjson::Document &doc, int key, b
     case IConfig::DryRunKey: /* --dry-run */
         return set(doc, BaseConfig::kDryRun, enable);
 
-    case IConfig::RebenchAlgoKey: /* --rebench-algo */
-        return set(doc, "rebench-algo", enable);
-
     case IConfig::VerboseKey: /* --verbose */
         return set(doc, BaseConfig::kVerbose, enable);
 
     case IConfig::NoTitleKey: /* --no-title */
         return set(doc, BaseConfig::kTitle, enable);
+
+#   ifdef XMRIG_FEATURE_BENCHMARK
+    case IConfig::RebenchAlgoKey: /* --rebench-algo */
+        return set(doc, BaseConfig::kRebenchAlgo, enable);
+#   endif
 
     case IConfig::PauseOnBatteryKey: /* --pause-on-battery */
         return set(doc, BaseConfig::kPauseOnBattery, enable);
@@ -362,8 +374,10 @@ void xmrig::BaseTransform::transformUint64(rapidjson::Document &doc, int key, ui
         return add(doc, Pools::kPools, Pool::kDaemonPollInterval, arg);
 #   endif
 
+#   ifdef XMRIG_FEATURE_BENCHMARK
     case IConfig::BenchAlgoTimeKey: /* --bench-algo-time */
-        return set(doc, "bench-algo-time", arg);
+        return set(doc, BaseConfig::kBenchAlgoTime, arg);
+#   endif
 
     default:
         break;

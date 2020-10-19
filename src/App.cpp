@@ -89,6 +89,7 @@ int xmrig::App::exec()
         return 0;
     }
 
+#   ifdef XMRIG_FEATURE_BENCHMARK
     m_controller->pre_start();
     m_controller->config()->benchmark().set_controller(m_controller);
 
@@ -97,6 +98,9 @@ int xmrig::App::exec()
     } else {
         m_controller->start();
     }
+#   else
+    m_controller->start();
+#   endif
 
     rc = uv_run(uv_default_loop(), UV_RUN_DEFAULT);
     uv_loop_close(uv_default_loop());
