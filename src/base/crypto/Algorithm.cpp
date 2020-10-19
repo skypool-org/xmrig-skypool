@@ -105,6 +105,7 @@ static AlgoName const algorithm_names[] = {
     { "RandomX",                   "rx",               Algorithm::RX_0            },
     { "randomx/wow",               "rx/wow",           Algorithm::RX_WOW          },
     { "RandomWOW",                 nullptr,            Algorithm::RX_WOW          },
+    { "DefyX",                     "defyx",            Algorithm::DEFYX           },
     { "randomx/arq",               "rx/arq",           Algorithm::RX_ARQ          },
     { "RandomARQ",                 nullptr,            Algorithm::RX_ARQ          },
     { "randomx/sfx",               "rx/sfx",           Algorithm::RX_SFX          },
@@ -338,6 +339,7 @@ xmrig::Algorithm::Family xmrig::Algorithm::family(Id id)
 #   ifdef XMRIG_ALGO_RANDOMX
     case RX_0:
     case RX_WOW:
+    case DEFYX:
     case RX_ARQ:
     case RX_SFX:
     case RX_KEVA:

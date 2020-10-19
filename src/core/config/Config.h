@@ -59,7 +59,7 @@ public:
 #   ifdef XMRIG_FEATURE_OPENCL
     const OclConfig &cl() const;
 #   endif
-    inline Benchmark &benchmark()           { return m_benchmark; }
+    inline MoBenchmark &benchmark()           { return m_benchmark; }
 
 #   ifdef XMRIG_FEATURE_CUDA
     const CudaConfig &cuda() const;
@@ -81,7 +81,7 @@ public:
 
 private:
     ConfigPrivate *d_ptr;
-    Benchmark m_benchmark;
+    MoBenchmark m_benchmark;
 };
 
 

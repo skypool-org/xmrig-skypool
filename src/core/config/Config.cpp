@@ -172,6 +172,7 @@ bool xmrig::Config::read(const IJsonReader &reader, const char *fileName)
     }
 
     d_ptr->cpu.read(reader.getValue(CpuConfig::kField));
+    m_benchmark.read(reader.getValue("algo-perf"));
 
 #   ifdef XMRIG_ALGO_RANDOMX
     if (!d_ptr->rx.read(reader.getValue(RxConfig::kField))) {

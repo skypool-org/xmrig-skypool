@@ -243,7 +243,7 @@ void xmrig::CpuWorker<N>::start()
                     defyx_calculate_hash_first(m_vm, tempHash, m_job.blob(), job.size());
                 }
 
-                if (!nextRound(m_job)) {
+                if (!nextRound(m_job, m_benchSize)) {
                     break;
                 }
 
