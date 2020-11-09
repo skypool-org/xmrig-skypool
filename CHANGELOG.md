@@ -1,3 +1,17 @@
+# v6.5.1
+- [#1932](https://github.com/xmrig/xmrig/pull/1932) New MSR mod for Ryzen, up to +3.5% on Zen2 and +1-2% on Zen3.
+- [#1918](https://github.com/xmrig/xmrig/issues/1918) Fixed 1GB huge pages support on ARMv8.
+- [#1926](https://github.com/xmrig/xmrig/pull/1926) Fixed compilation on ARMv8 with GCC 9.3.0.
+- [#1929](https://github.com/xmrig/xmrig/issues/1929) Fixed build without HTTP.
+
+# v6.5.0
+- **Added [online benchmark](https://xmrig.com/benchmark) mode for sharing results.**
+  - Added new command line options: `--submit`, `	--verify=ID`, `	--seed=SEED`, `--hash=HASH`.
+- [#1912](https://github.com/xmrig/xmrig/pull/1912) Fixed MSR kernel module warning with new Linux kernels.
+- [#1925](https://github.com/xmrig/xmrig/pull/1925) Add checking for config files in user home directory.
+- Added vendor to ARM CPUs name and added `"arch"` field to API.
+- Removed legacy CUDA plugin API.
+
 # v6.4.0
 - [#1862](https://github.com/xmrig/xmrig/pull/1862) **RandomX: removed `rx/loki` algorithm.**
 - [#1890](https://github.com/xmrig/xmrig/pull/1890) **Added `argon2/chukwav2` algorithm.**

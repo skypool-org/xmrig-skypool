@@ -1,6 +1,6 @@
 /* XMRig
- * Copyright 2018-2020 SChernykh   <https://github.com/SChernykh>
- * Copyright 2016-2020 XMRig       <support@xmrig.com>
+ * Copyright (c) 2018-2020 SChernykh   <https://github.com/SChernykh>
+ * Copyright (c) 2016-2020 XMRig       <support@xmrig.com>
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include <array>
 #include <cstring>
+#include <fstream>
 #include <thread>
 
 
@@ -66,6 +67,8 @@ xmrig::BasicCpuInfo::BasicCpuInfo() :
     if (!name.isNull()) {
         strncpy(m_brand, name, sizeof(m_brand) - 1);
     }
+
+    m_flags.set(FLAG_PDPE1GB, std::ifstream("/sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages").good());
 #   endif
 }
 
@@ -102,6 +105,12 @@ rapidjson::Value xmrig::BasicCpuInfo::toJSON(rapidjson::Document &doc) const
     out.AddMember("backend",    StringRef(backend()), allocator);
     out.AddMember("msr",        "none", allocator);
     out.AddMember("assembly",   "none", allocator);
+
+#   ifdef XMRIG_ARMv8
+    out.AddMember("arch", "aarch64", allocator);
+#   else
+    out.AddMember("arch", "aarch32", allocator);
+#   endif
 
     Value flags(kArrayType);
 
