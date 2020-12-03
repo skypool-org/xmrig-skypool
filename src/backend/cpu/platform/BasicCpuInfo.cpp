@@ -52,8 +52,16 @@
 namespace xmrig {
 
 
-static const std::array<const char *, ICpuInfo::FLAG_MAX> flagNames     = { "aes", "avx2", "avx512f", "bmi2", "osxsave", "pdpe1gb", "sse2", "ssse3", "sse4.1", "xop", "popcnt", "cat_l3" };
-static const std::array<const char *, ICpuInfo::MSR_MOD_MAX> msrNames   = { "none", "ryzen", "intel", "custom" };
+constexpr size_t kCpuFlagsSize                                  = 12;
+static const std::array<const char *, kCpuFlagsSize> flagNames  = { "aes", "avx2", "avx512f", "bmi2", "osxsave", "pdpe1gb", "sse2", "ssse3", "sse4.1", "xop", "popcnt", "cat_l3" };
+static_assert(kCpuFlagsSize == ICpuInfo::FLAG_MAX, "kCpuFlagsSize and FLAG_MAX mismatch");
+
+
+#ifdef XMRIG_FEATURE_MSR
+constexpr size_t kMsrArraySize                                  = 5;
+static const std::array<const char *, kMsrArraySize> msrNames   = { MSR_NAMES_LIST };
+static_assert(kMsrArraySize == ICpuInfo::MSR_MOD_MAX, "kMsrArraySize and MSR_MOD_MAX mismatch");
+#endif
 
 
 static inline void cpuid(uint32_t level, int32_t output[4])
@@ -189,15 +197,32 @@ xmrig::BasicCpuInfo::BasicCpuInfo() :
         memcpy(vendor + 4, &data[3], 4);
         memcpy(vendor + 8, &data[2], 4);
 
+        cpuid(PROCESSOR_INFO, data);
+
+        m_procInfo = data[EAX_Reg];
+        m_family = get_masked(m_procInfo, 12, 8) + get_masked(m_procInfo, 28, 20);
+        m_model = (get_masked(m_procInfo, 20, 16) << 4) | get_masked(m_procInfo, 8, 4);
+        m_stepping = get_masked(m_procInfo, 4, 0);
+
         if (memcmp(vendor, "AuthenticAMD", 12) == 0) {
             m_vendor = VENDOR_AMD;
 
-            cpuid(PROCESSOR_INFO, data);
-            const int32_t family = get_masked(data[EAX_Reg], 12, 8) + get_masked(data[EAX_Reg], 28, 20);
-
-            if (family >= 23) {
+            if (m_family >= 0x17) {
                 m_assembly = Assembly::RYZEN;
-                m_msrMod   = MSR_MOD_RYZEN;
+
+                switch (m_family) {
+                case 0x17:
+                    m_msrMod = MSR_MOD_RYZEN_17H;
+                    break;
+
+                case 0x19:
+                    m_msrMod = MSR_MOD_RYZEN_19H;
+                    break;
+
+                default:
+                    m_msrMod = MSR_MOD_NONE;
+                    break;
+                }
             }
             else {
                 m_assembly = Assembly::BULLDOZER;
@@ -220,7 +245,6 @@ xmrig::BasicCpuInfo::BasicCpuInfo() :
                 unsigned int reserved2 : 4;
             } processor_info;
 
-            cpuid(1, data);
             memcpy(&processor_info, data, sizeof(processor_info));
 
             // Intel JCC erratum mitigation
@@ -314,6 +338,10 @@ rapidjson::Value xmrig::BasicCpuInfo::toJSON(rapidjson::Document &doc) const
     Value out(kObjectType);
 
     out.AddMember("brand",      StringRef(brand()), allocator);
+    out.AddMember("family",     m_family, allocator);
+    out.AddMember("model",      m_model, allocator);
+    out.AddMember("stepping",   m_stepping, allocator);
+    out.AddMember("proc_info",  m_procInfo, allocator);
     out.AddMember("aes",        hasAES(), allocator);
     out.AddMember("avx2",       hasAVX2(), allocator);
     out.AddMember("x64",        isX64(), allocator);
@@ -324,7 +352,12 @@ rapidjson::Value xmrig::BasicCpuInfo::toJSON(rapidjson::Document &doc) const
     out.AddMember("packages",   static_cast<uint64_t>(packages()), allocator);
     out.AddMember("nodes",      static_cast<uint64_t>(nodes()), allocator);
     out.AddMember("backend",    StringRef(backend()), allocator);
+
+#   ifdef XMRIG_FEATURE_MSR
     out.AddMember("msr",        StringRef(msrNames[msrMod()]), allocator);
+#   else
+    out.AddMember("msr",        "none", allocator);
+#   endif
 
 #   ifdef XMRIG_FEATURE_ASM
     out.AddMember("assembly",   StringRef(Assembly(assembly()).toString()), allocator);

@@ -44,7 +44,7 @@ class Miner;
 class CpuLaunchData
 {
 public:
-    CpuLaunchData(const Miner *miner, const Algorithm &algorithm, const CpuConfig &config, const CpuThread &thread, uint32_t benchSize);
+    CpuLaunchData(const Miner *miner, const Algorithm &algorithm, const CpuConfig &config, const CpuThread &thread, size_t threads);
 
     bool isEqual(const CpuLaunchData &other) const;
     CnHash::AlgoVariant av() const;
@@ -66,7 +66,7 @@ public:
     const int priority;
     const int64_t affinity;
     const Miner *miner;
-    const uint32_t benchSize;
+    const size_t threads;
     const uint32_t intensity;
 };
 

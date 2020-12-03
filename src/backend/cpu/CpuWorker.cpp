@@ -30,6 +30,7 @@
 
 #include "backend/cpu/CpuWorker.h"
 #include "base/tools/Chrono.h"
+#include "core/config/Config.h"
 #include "core/Miner.h"
 #include "crypto/cn/CnCtx.h"
 #include "crypto/cn/CryptoNight_test.h"
@@ -53,23 +54,14 @@
 #endif
 
 
+#ifdef XMRIG_FEATURE_BENCHMARK
+#   include "backend/common/benchmark/BenchState.h"
+#endif
+
+
 namespace xmrig {
 
 static constexpr uint32_t kReserveCount = 32768;
-
-
-template<size_t N>
-inline bool nextRound(WorkerJob<N> &job, uint32_t benchSize)
-{
-    if (!job.nextRound(benchSize ? 1 : kReserveCount, 1)) {
-        JobResults::done(job.currentJob());
-
-        return false;
-    }
-
-    return true;
-}
-
 
 } // namespace xmrig
 
@@ -86,7 +78,7 @@ xmrig::CpuWorker<N>::CpuWorker(size_t id, const CpuLaunchData &data) :
     m_av(data.av()),
     m_astrobwtMaxSize(data.astrobwtMaxSize * 1000),
     m_miner(data.miner),
-    m_benchSize(data.benchSize),
+    m_threads(data.threads),
     m_ctx()
 {
     m_memory = new VirtualMemory(m_algorithm.l3() * N, data.hugePages, false, true, m_node);
@@ -232,6 +224,19 @@ void xmrig::CpuWorker<N>::start()
                 current_job_nonces[i] = *m_job.nonce(i);
             }
 
+#           ifdef XMRIG_FEATURE_BENCHMARK
+            if (m_benchSize) {
+                if (current_job_nonces[0] >= m_benchSize) {
+                    return BenchState::done();
+                }
+
+                // Make each hash dependent on the previous one in single thread benchmark to prevent cheating with multiple threads
+                if (m_threads == 1) {
+                    *(uint64_t*)(m_job.blob()) ^= BenchState::data();
+                }
+            }
+#           endif
+
             bool valid = true;
 
 #           ifdef XMRIG_ALGO_RANDOMX
@@ -243,7 +248,7 @@ void xmrig::CpuWorker<N>::start()
                     defyx_calculate_hash_first(m_vm, tempHash, m_job.blob(), job.size());
                 }
 
-                if (!nextRound(m_job, m_benchSize)) {
+                if (!nextRound()) {
                     break;
                 }
 
@@ -254,7 +259,7 @@ void xmrig::CpuWorker<N>::start()
                     randomx_calculate_hash_first(m_vm, tempHash, m_job.blob(), job.size());
                 }
 
-                if (!nextRound(m_job, m_benchSize)) {
+                if (!nextRound()) {
                     break;
                 }
 
@@ -275,7 +280,7 @@ void xmrig::CpuWorker<N>::start()
                     fn(job.algorithm())(m_job.blob(), job.size(), m_hash, m_ctx, job.height());
                 }
 
-                if (!nextRound(m_job, m_benchSize)) {
+                if (!nextRound()) {
                     break;
                 };
             }
@@ -287,11 +292,7 @@ void xmrig::CpuWorker<N>::start()
 #                   ifdef XMRIG_FEATURE_BENCHMARK
                     if (m_benchSize) {
                         if (current_job_nonces[i] < m_benchSize) {
-                            m_benchData ^= value;
-                        }
-                        else {
-                            m_benchDoneTime = Chrono::steadyMSecs();
-                            return;
+                            BenchState::add(value);
                         }
                     }
                     else
@@ -310,6 +311,25 @@ void xmrig::CpuWorker<N>::start()
 
         consumeJob();
     }
+}
+
+
+template<size_t N>
+bool xmrig::CpuWorker<N>::nextRound()
+{
+#   ifdef XMRIG_FEATURE_BENCHMARK
+    const uint32_t count = m_benchSize ? 1U : kReserveCount;
+#   else
+    constexpr uint32_t count = kReserveCount;
+#   endif
+
+    if (!m_job.nextRound(count, 1)) {
+        JobResults::done(m_job.currentJob());
+
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -393,7 +413,16 @@ void xmrig::CpuWorker<N>::consumeJob()
         return;
     }
 
-    m_job.add(m_miner->job(), m_benchSize ? 1 : kReserveCount, Nonce::CPU);
+    auto job = m_miner->job();
+
+#   ifdef XMRIG_FEATURE_BENCHMARK
+    m_benchSize          = job.benchSize();
+    const uint32_t count = m_benchSize ? 1U : kReserveCount;
+#   else
+    constexpr uint32_t count = kReserveCount;
+#   endif
+
+    m_job.add(job, count, Nonce::CPU);
 
 #   ifdef XMRIG_ALGO_RANDOMX
     if (m_job.currentJob().algorithm().family() == Algorithm::RANDOM_X) {
