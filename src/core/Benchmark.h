@@ -34,6 +34,7 @@ class MoBenchmark : public IJobResultListener {
             RX_0,          // "rx/0"             RandomX (Monero).
             RX_WOW,        // "rx/wow"           RandomWOW (Wownero).
             RX_ARQ,        // "rx/arq"           RandomARQ (Arqma).
+            CN_HEAVY_XHV,  // "cn-heavy/xhv"     CryptoNight-Heavy (modified, Haven Protocol only).
             MAX,
             MIN = 0,
             INVALID = -1,
@@ -43,6 +44,7 @@ class MoBenchmark : public IJobResultListener {
             Algorithm::RX_0,
             Algorithm::RX_WOW,
             Algorithm::RX_ARQ,
+            Algorithm::CN_HEAVY_XHV,
         };
 
         Job* m_bench_job[BenchAlgo::MAX];

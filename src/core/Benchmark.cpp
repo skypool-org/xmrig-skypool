@@ -110,6 +110,7 @@ float MoBenchmark::get_algo_perf(Algorithm::Id algo) const {
         case Algorithm::RX_0:          return m_bench_algo_perf[BenchAlgo::RX_0];
         case Algorithm::RX_ARQ:        return m_bench_algo_perf[BenchAlgo::RX_ARQ];
         case Algorithm::RX_SFX:        return m_bench_algo_perf[BenchAlgo::RX_0];
+        case Algorithm::CN_HEAVY_XHV:  return m_bench_algo_perf[BenchAlgo::CN_HEAVY_XHV];
         default: return 0.0f;
     }
 }
