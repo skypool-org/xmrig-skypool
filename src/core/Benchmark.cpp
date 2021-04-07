@@ -46,7 +46,7 @@ MoBenchmark::~MoBenchmark() {
 void MoBenchmark::start() {
     JobResults::setListener(this, m_controller->config()->cpu().isHwAES()); // register benchmark as job result listener to compute hashrates there
     // write text before first benchmark round
-    LOG_ALERT(">>>>> STARTING ALGO PERFORMANCE CALIBRATION (with %i seconds round)", m_controller->config()->benchAlgoTime());
+    LOG_INFO(">>>>> STARTING ALGO PERFORMANCE CALIBRATION (with %i seconds round)", m_controller->config()->benchAlgoTime());
     // start benchmarking from first PerfAlgo in the list
     start(xmrig::MoBenchmark::MIN);
     m_isNewBenchRun = true;
@@ -166,12 +166,12 @@ void MoBenchmark::onJobResult(const JobResult& result) {
     if (m_backends_started.size() < m_enabled_backend_count && (now - m_time_start < static_cast<unsigned>(3*60*1000))) return;
     ++ m_hash_count;
     if (!m_bench_start) {
-       LOG_ALERT(" ===> Starting benchmark of %s algo", Algorithm(ba2a[m_bench_algo]).shortName());
+       LOG_INFO(" ===> Starting benchmark of %s algo", Algorithm(ba2a[m_bench_algo]).shortName());
        m_bench_start = now; // time of measurements start (in ms)
     } else if (now - m_bench_start > static_cast<unsigned>(m_controller->config()->benchAlgoTime()*1000)) { // end of benchmark round for m_bench_algo
         const float hashrate = static_cast<float>(m_hash_count) * result.diff / (now - m_bench_start) * 1000.0f;
         m_bench_algo_perf[m_bench_algo] = hashrate; // store hashrate result
-        LOG_ALERT(" ===> %s hasrate: %f", Algorithm(ba2a[m_bench_algo]).shortName(), hashrate);
+        LOG_INFO(" ===> %s hasrate: %f", Algorithm(ba2a[m_bench_algo]).shortName(), hashrate);
         run_next_bench_algo(m_bench_algo);
     }
 }
