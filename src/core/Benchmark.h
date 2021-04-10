@@ -32,8 +32,8 @@ class MoBenchmark : public IJobResultListener {
 
         enum BenchAlgo : int {
             RX_0,          // "rx/0"             RandomX (Monero).
-            RX_WOW,        // "rx/wow"           RandomWOW (Wownero).
-            RX_ARQ,        // "rx/arq"           RandomARQ (Arqma).
+            // RX_WOW,        // "rx/wow"           RandomWOW (Wownero).
+            // RX_ARQ,        // "rx/arq"           RandomARQ (Arqma).
             CN_HEAVY_XHV,  // "cn-heavy/xhv"     CryptoNight-Heavy (modified, Haven Protocol only).
             MAX,
             MIN = 0,
@@ -42,8 +42,8 @@ class MoBenchmark : public IJobResultListener {
 
         const Algorithm::Id ba2a[BenchAlgo::MAX] = {
             Algorithm::RX_0,
-            Algorithm::RX_WOW,
-            Algorithm::RX_ARQ,
+            // Algorithm::RX_WOW,
+            // Algorithm::RX_ARQ,
             Algorithm::CN_HEAVY_XHV,
         };
 
