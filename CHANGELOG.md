@@ -1,3 +1,33 @@
+# v6.12.2
+- [#2280](https://github.com/xmrig/xmrig/issues/2280) GPU backends are now disabled in benchmark mode.
+- [#2322](https://github.com/xmrig/xmrig/pull/2322) Improved MSR compatibility with recent Linux kernels and updated `randomx_boost.sh`.
+- [#2340](https://github.com/xmrig/xmrig/pull/2340) Fixed AES detection on FreeBSD on ARM.
+- [#2341](https://github.com/xmrig/xmrig/pull/2341) `sse2neon` updated to the latest version.
+- [#2351](https://github.com/xmrig/xmrig/issues/2351) Fixed help output for `--cpu-priority` and `--cpu-affinity` option.
+- [#2375](https://github.com/xmrig/xmrig/pull/2375) Fixed macOS CUDA backend default loader name.
+- [#2378](https://github.com/xmrig/xmrig/pull/2378) Fixed broken light mode mining on x86.
+- [#2379](https://github.com/xmrig/xmrig/pull/2379) Fixed CL code for KawPow where it assumes everything is AMD.
+- [#2386](https://github.com/xmrig/xmrig/pull/2386) RandomX: enabled `IMUL_RCP` optimization for light mode mining.
+- [#2393](https://github.com/xmrig/xmrig/pull/2393) RandomX: added BMI2 version for scratchpad prefetch.
+- [#2395](https://github.com/xmrig/xmrig/pull/2395) RandomX: rewrote dataset read code.
+- [#2398](https://github.com/xmrig/xmrig/pull/2398) RandomX: optimized ARMv8 dataset read.
+- Added `argon2/ninja` alias for `argon2/wrkz` algorithm.
+
+# v6.12.1
+- [#2296](https://github.com/xmrig/xmrig/pull/2296) Fixed Zen3 assembly code for `cn/upx2` algorithm.
+
+# v6.12.0
+- [#2276](https://github.com/xmrig/xmrig/pull/2276) Added support for Uplexa (`cn/upx2` algorithm).
+- [#2261](https://github.com/xmrig/xmrig/pull/2261) Show total hashrate if compiled without OpenCL.
+- [#2289](https://github.com/xmrig/xmrig/pull/2289) RandomX: optimized `IMUL_RCP` instruction.
+- Added support for `--user` command line option for online benchmark.
+
+# v6.11.2
+- [#2207](https://github.com/xmrig/xmrig/issues/2207) Fixed regression in HTTP parser and llhttp updated to v5.1.0.
+
+# v6.11.1
+- [#2239](https://github.com/xmrig/xmrig/pull/2239) Fixed broken `coin` setting functionality.
+
 # v6.11.0
 - [#2196](https://github.com/xmrig/xmrig/pull/2196) Improved DNS subsystem and added new DNS specific options.
 - [#2172](https://github.com/xmrig/xmrig/pull/2172) Fixed build on Alpine 3.13.
