@@ -16,7 +16,6 @@
  *   along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "core/config/ConfigTransform.h"
 #include "base/kernel/interfaces/IConfig.h"
 #include "base/net/stratum/Pool.h"
@@ -195,6 +194,9 @@ void xmrig::ConfigTransform::transform(rapidjson::Document &doc, int key, const 
 
     case IConfig::RandomXCacheQoSKey: /* --cache-qos */
         return set(doc, RxConfig::kField, RxConfig::kCacheQoS, true);
+
+    case IConfig::HugePagesJitKey: /* --huge-pages-jit */
+        return set(doc, CpuConfig::kField, CpuConfig::kHugePagesJit, true);
 #   endif
 
 #   ifdef XMRIG_FEATURE_OPENCL
@@ -351,6 +353,9 @@ void xmrig::ConfigTransform::transformBenchmark(rapidjson::Document &doc, int ke
 
     case IConfig::UserKey: /* --user */
         return set(doc, BenchConfig::kBenchmark, BenchConfig::kUser, arg);
+
+    default:
+        break;
     }
 }
 #endif

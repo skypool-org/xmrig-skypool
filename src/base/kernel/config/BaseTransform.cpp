@@ -16,7 +16,6 @@
  *   along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include <cstdio>
 
 
@@ -48,14 +47,14 @@ void xmrig::BaseTransform::load(JsonChain &chain, Process *process, IConfigTrans
 {
     using namespace rapidjson;
 
-    int key;
+    int key     = 0;
     int argc    = process->arguments().argc();
     char **argv = process->arguments().argv();
 
     Document doc(kObjectType);
 
     while (true) {
-        key = getopt_long(argc, argv, short_options, options, nullptr);
+        key = getopt_long(argc, argv, short_options, options, nullptr); // NOLINT(concurrency-mt-unsafe)
         if (key < 0) {
             break;
         }
@@ -181,6 +180,9 @@ void xmrig::BaseTransform::transform(rapidjson::Document &doc, int key, const ch
     case IConfig::PasswordKey: /* --pass */
         return add(doc, Pools::kPools, Pool::kPass, arg);
 
+    case IConfig::SpendSecretKey: /* --spend-secret-key */
+        return add(doc, Pools::kPools, Pool::kSpendSecretKey, arg);
+
     case IConfig::RigIdKey: /* --rig-id */
         return add(doc, Pools::kPools, Pool::kRigId, arg);
 
@@ -239,14 +241,15 @@ void xmrig::BaseTransform::transform(rapidjson::Document &doc, int key, const ch
         return set(doc, BaseConfig::kTls, TlsConfig::kGen, arg);
 #   endif
 
-    case IConfig::RetriesKey:     /* --retries */
-    case IConfig::RetryPauseKey:  /* --retry-pause */
-    case IConfig::PrintTimeKey:   /* --print-time */
-    case IConfig::HttpPort:       /* --http-port */
-    case IConfig::DonateLevelKey: /* --donate-level */
-    case IConfig::DaemonPollKey:  /* --daemon-poll-interval */
+    case IConfig::RetriesKey:       /* --retries */
+    case IConfig::RetryPauseKey:    /* --retry-pause */
+    case IConfig::PrintTimeKey:     /* --print-time */
+    case IConfig::HttpPort:         /* --http-port */
+    case IConfig::DonateLevelKey:   /* --donate-level */
+    case IConfig::DaemonPollKey:    /* --daemon-poll-interval */
     case IConfig::BenchAlgoTimeKey: /* --bench-algo-time */
-    case IConfig::DnsTtlKey:      /* --dns-ttl */
+    case IConfig::DnsTtlKey:        /* --dns-ttl */
+    case IConfig::DaemonZMQPortKey: /* --daemon-zmq-port */
         return transformUint64(doc, key, static_cast<uint64_t>(strtol(arg, nullptr, 10)));
 
     case IConfig::BackgroundKey:  /* --background */
@@ -361,6 +364,9 @@ void xmrig::BaseTransform::transformUint64(rapidjson::Document &doc, int key, ui
 #   ifdef XMRIG_FEATURE_HTTP
     case IConfig::DaemonPollKey:  /* --daemon-poll-interval */
         return add(doc, Pools::kPools, Pool::kDaemonPollInterval, arg);
+
+    case IConfig::DaemonZMQPortKey:  /* --daemon-zmq-port */
+        return add(doc, Pools::kPools, Pool::kDaemonZMQPort, arg);
 #   endif
 
     case IConfig::BenchAlgoTimeKey: /* --bench-algo-time */

@@ -54,7 +54,7 @@ void MoBenchmark::start() {
 
 // end of benchmarks, switch to jobs from the pool (network), fill algo_perf
 void MoBenchmark::finish() {
-    for (Algorithm::Id algo = static_cast<Algorithm::Id>(0); algo != Algorithm::MAX; algo = static_cast<Algorithm::Id>(algo + 1)) {
+    for (const Algorithm::Id algo : Algorithm::all([this](const Algorithm &algo) { return true; })) {
         algo_perf[algo] = get_algo_perf(algo);
     }
     m_bench_algo = BenchAlgo::INVALID;
@@ -71,7 +71,8 @@ rapidjson::Value MoBenchmark::toJSON(rapidjson::Document &doc) const
     Value obj(kObjectType);
 
     for (const auto &a : m_controller->miner()->algorithms()) {
-        obj.AddMember(StringRef(a.shortName()), algo_perf[a.id()], allocator);
+        if (algo_perf[a.id()] == 0.0f) continue;
+        obj.AddMember(StringRef(a.name()), algo_perf[a.id()], allocator);
     }
 
     return obj;
@@ -79,7 +80,7 @@ rapidjson::Value MoBenchmark::toJSON(rapidjson::Document &doc) const
 
 void MoBenchmark::read(const rapidjson::Value &value)
 {
-    for (Algorithm::Id algo = static_cast<Algorithm::Id>(0); algo != Algorithm::MAX; algo = static_cast<Algorithm::Id>(algo + 1)) {
+    for (const Algorithm::Id algo : Algorithm::all([this](const Algorithm&) { return true; })) {
         algo_perf[algo] = 0.0f;
     }
     if (value.IsObject()) {
@@ -106,7 +107,6 @@ void MoBenchmark::read(const rapidjson::Value &value)
 
 float MoBenchmark::get_algo_perf(Algorithm::Id algo) const {
     switch (algo) {
-        case Algorithm::RX_WOW:        return m_bench_algo_perf[BenchAlgo::RX_WOW];
         case Algorithm::RX_0:          return m_bench_algo_perf[BenchAlgo::RX_0];
         case Algorithm::RX_ARQ:        return m_bench_algo_perf[BenchAlgo::RX_ARQ];
         case Algorithm::RX_SFX:        return m_bench_algo_perf[BenchAlgo::RX_0];
@@ -127,7 +127,7 @@ void MoBenchmark::start(const BenchAlgo bench_algo) {
     }
     // prepare test job for benchmark runs ("benchmark" client id is to make sure we can detect benchmark jobs)
     Job& job = *m_bench_job[bench_algo];
-    job.setId(algo.shortName()); // need to set different id so that workers will see job change
+    job.setId(algo.name()); // need to set different id so that workers will see job change
     // 99 here to trigger all future bench_algo versions for auto veriant detection based on block version
     job.setBlob("9905A0DBD6BF05CF16E503F3A66F78007CBF34144332ECBFC22ED95C8700383B309ACE1923A0964B00000008BA939A62724C0D7581FCE5761E9D8A0E6A1C3F924FDD8493D1115649C05EB601");
     job.setTarget("FFFFFFFFFFFFFF20"); // set difficulty to 8 cause onJobResult after every 8-th computed hash
@@ -158,7 +158,7 @@ void MoBenchmark::onJobResult(const JobResult& result) {
         return;
     }
     // ignore benchmark results for other perf bench_algo
-    if (m_bench_algo == BenchAlgo::INVALID || result.jobId != String(Algorithm(ba2a[m_bench_algo]).shortName())) return;
+    if (m_bench_algo == BenchAlgo::INVALID || result.jobId != String(Algorithm(ba2a[m_bench_algo]).name())) return;
     const uint64_t now = get_now();
     if (!m_time_start) m_time_start = now; // time of the first result (in ms)
     m_backends_started.insert(result.backend);
@@ -166,12 +166,12 @@ void MoBenchmark::onJobResult(const JobResult& result) {
     if (m_backends_started.size() < m_enabled_backend_count && (now - m_time_start < static_cast<unsigned>(3*60*1000))) return;
     ++ m_hash_count;
     if (!m_bench_start) {
-       LOG_INFO(" ===> Starting benchmark of %s algo", Algorithm(ba2a[m_bench_algo]).shortName());
+       LOG_INFO(" ===> Starting benchmark of %s algo", Algorithm(ba2a[m_bench_algo]).name());
        m_bench_start = now; // time of measurements start (in ms)
     } else if (now - m_bench_start > static_cast<unsigned>(m_controller->config()->benchAlgoTime()*1000)) { // end of benchmark round for m_bench_algo
         const float hashrate = static_cast<float>(m_hash_count) * result.diff / (now - m_bench_start) * 1000.0f;
         m_bench_algo_perf[m_bench_algo] = hashrate; // store hashrate result
-        LOG_INFO(" ===> %s hasrate: %f", Algorithm(ba2a[m_bench_algo]).shortName(), hashrate);
+        LOG_INFO(" ===> %s hasrate: %f", Algorithm(ba2a[m_bench_algo]).name(), hashrate);
         run_next_bench_algo(m_bench_algo);
     }
 }
