@@ -18,9 +18,12 @@
 #pragma once
 
 #include <set>
+#include <map>
 #include "net/interfaces/IJobResultListener.h"
 #include "base/crypto/Algorithm.h"
 #include "rapidjson/fwd.h"
+
+#include <memory>
 
 namespace xmrig {
 
@@ -32,7 +35,6 @@ class MoBenchmark : public IJobResultListener {
 
         enum BenchAlgo : int {
             RX_0,          // "rx/0"             RandomX (Monero).
-            RX_WOW,        // "rx/wow"           RandomWOW (Wownero).
             RX_ARQ,        // "rx/arq"           RandomARQ (Arqma).
             CN_HEAVY_XHV,  // "cn-heavy/xhv"     CryptoNight-Heavy (modified, Haven Protocol only).
             MAX,
@@ -42,7 +44,6 @@ class MoBenchmark : public IJobResultListener {
 
         const Algorithm::Id ba2a[BenchAlgo::MAX] = {
             Algorithm::RX_0,
-            Algorithm::RX_WOW,
             Algorithm::RX_ARQ,
             Algorithm::CN_HEAVY_XHV,
         };
@@ -75,7 +76,7 @@ class MoBenchmark : public IJobResultListener {
         void start(); // start benchmarks
 
         bool isNewBenchRun() const { return m_isNewBenchRun; }
-        float algo_perf[Algorithm::MAX];
+        mutable std::map<Algorithm::Id, float> algo_perf;
 
         rapidjson::Value toJSON(rapidjson::Document &doc) const;
         void read(const rapidjson::Value &value);

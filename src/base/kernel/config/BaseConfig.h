@@ -89,7 +89,7 @@ public:
     bool read(const IJsonReader &reader, const char *fileName) override;
     bool save() override;
 
-    void printVersions();
+    static void printVersions();
 
 protected:
     bool m_autoSave         = true;
@@ -116,7 +116,7 @@ protected:
 #   endif
 
 private:
-    void setVerbose(const rapidjson::Value &value);
+    static void setVerbose(const rapidjson::Value &value);
 };
 
 
