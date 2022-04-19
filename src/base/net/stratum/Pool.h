@@ -69,10 +69,12 @@ public:
     static const char *kSOCKS5;
     static const char *kSubmitToOrigin;
     static const char *kTls;
+    static const char* kWSS;
     static const char *kUrl;
     static const char *kUser;
     static const char* kSpendSecretKey;
     static const char* kDaemonZMQPort;
+    static const char* kDaemonWSSPort;
     static const char *kNicehashHost;
 
     constexpr static int kKeepAliveTimeout         = 60;
@@ -80,7 +82,7 @@ public:
     constexpr static uint64_t kDefaultPollInterval = 1000;
 
     Pool() = default;
-    Pool(const char *host, uint16_t port, const char *user, const char *password, const char* spendSecretKey, int keepAlive, bool nicehash, bool tls, Mode mode);
+    Pool(const char *host, uint16_t port, const char *user, const char *password, const char* spendSecretKey, int keepAlive, bool nicehash, bool tls, bool wss, Mode mode);
     Pool(const char *url);
     Pool(const rapidjson::Value &object);
 
@@ -93,6 +95,7 @@ public:
 
     inline bool isNicehash() const                      { return m_flags.test(FLAG_NICEHASH); }
     inline bool isTLS() const                           { return m_flags.test(FLAG_TLS) || m_url.isTLS(); }
+    inline bool isWSS() const                           { return m_flags.test(FLAG_WSS) || m_url.isWSS(); }
     inline bool isValid() const                         { return m_url.isValid(); }
     inline const Algorithm &algorithm() const           { return m_algorithm; }
     inline const Coin &coin() const                     { return m_coin; }
@@ -111,6 +114,7 @@ public:
     inline int zmq_port() const                         { return m_zmqPort; }
     inline uint64_t pollInterval() const                { return m_pollInterval; }
     inline void setAlgo(const Algorithm &algorithm)     { m_algorithm = algorithm; }
+    inline void setUrl(const char *url)                 { m_url = Url(url); }
     inline void setPassword(const String &password)     { m_password = password; }
     inline void setProxy(const ProxyUrl &proxy)         { m_proxy = proxy; }
     inline void setRigId(const String &rigId)           { m_rigId = rigId; }
@@ -134,6 +138,7 @@ private:
         FLAG_ENABLED,
         FLAG_NICEHASH,
         FLAG_TLS,
+        FLAG_WSS,
         FLAG_MAX
     };
 

@@ -38,6 +38,11 @@ namespace xmrig {
 class RxVm;
 
 
+#ifdef XMRIG_ALGO_GHOSTRIDER
+namespace ghostrider { struct HelperThread; }
+#endif
+
+
 template<size_t N>
 class CpuWorker : public Worker
 {
@@ -46,6 +51,15 @@ public:
 
     CpuWorker(size_t id, const CpuLaunchData &data);
     ~CpuWorker() override;
+
+    size_t threads() const override
+    {
+#       ifdef XMRIG_ALGO_GHOSTRIDER
+        return ((m_algorithm.family() == Algorithm::GHOSTRIDER) && m_ghHelper) ? 2 : 1;
+#       else
+        return 1;
+#       endif
+    }
 
 protected:
     bool selfTest() override;
@@ -87,6 +101,10 @@ private:
     randomx_vm *m_vm        = nullptr;
 #   endif
 
+#   ifdef XMRIG_ALGO_GHOSTRIDER
+    ghostrider::HelperThread* m_ghHelper = nullptr;
+#   endif
+
 #   ifdef XMRIG_FEATURE_BENCHMARK
     uint32_t m_benchSize    = 0;
 #   endif
@@ -102,6 +120,7 @@ extern template class CpuWorker<2>;
 extern template class CpuWorker<3>;
 extern template class CpuWorker<4>;
 extern template class CpuWorker<5>;
+extern template class CpuWorker<8>;
 
 
 } // namespace xmrig

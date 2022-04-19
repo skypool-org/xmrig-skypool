@@ -94,11 +94,17 @@ const char *Algorithm::kAR2_WRKZ        = "argon2/ninja";
 #ifdef XMRIG_ALGO_ASTROBWT
 const char *Algorithm::kASTROBWT        = "astrobwt";
 const char *Algorithm::kASTROBWT_DERO   = "astrobwt";
+const char *Algorithm::kASTROBWT_DERO_2 = "astrobwt/v2";
 #endif
 
 #ifdef XMRIG_ALGO_KAWPOW
 const char *Algorithm::kKAWPOW          = "kawpow";
 const char *Algorithm::kKAWPOW_RVN      = "kawpow";
+#endif
+
+#ifdef XMRIG_ALGO_GHOSTRIDER
+const char* Algorithm::kGHOSTRIDER      = "ghostrider";
+const char* Algorithm::kGHOSTRIDER_RTM  = "ghostrider";
 #endif
 
 
@@ -158,10 +164,15 @@ static const std::map<uint32_t, const char *> kAlgorithmNames = {
 
 #   ifdef XMRIG_ALGO_ASTROBWT
     ALGO_NAME(ASTROBWT_DERO),
+    ALGO_NAME(ASTROBWT_DERO_2),
 #   endif
 
 #   ifdef XMRIG_ALGO_KAWPOW
     ALGO_NAME(KAWPOW_RVN),
+#   endif
+
+#   ifdef XMRIG_ALGO_GHOSTRIDER
+    ALGO_NAME(GHOSTRIDER_RTM),
 #   endif
 };
 
@@ -273,10 +284,18 @@ static const std::map<const char *, Algorithm::Id, aliasCompare> kAlgorithmAlias
 
 #   ifdef XMRIG_ALGO_ASTROBWT
     ALGO_ALIAS_AUTO(ASTROBWT_DERO), ALGO_ALIAS(ASTROBWT_DERO,   "astrobwt/dero"),
+    ALGO_ALIAS_AUTO(ASTROBWT_DERO_2), ALGO_ALIAS(ASTROBWT_DERO_2, "astrobwt/v2"),
+    ALGO_ALIAS_AUTO(ASTROBWT_DERO_2), ALGO_ALIAS(ASTROBWT_DERO_2, "astrobwt/dero_he"),
+    ALGO_ALIAS_AUTO(ASTROBWT_DERO_2), ALGO_ALIAS(ASTROBWT_DERO_2, "astrobwt/derohe"),
 #   endif
 
 #   ifdef XMRIG_ALGO_KAWPOW
     ALGO_ALIAS_AUTO(KAWPOW_RVN),    ALGO_ALIAS(KAWPOW_RVN,      "kawpow/rvn"),
+#   endif
+
+#   ifdef XMRIG_ALGO_GHOSTRIDER
+    ALGO_ALIAS_AUTO(GHOSTRIDER_RTM), ALGO_ALIAS(GHOSTRIDER_RTM, "ghostrider/rtm"),
+                                     ALGO_ALIAS(GHOSTRIDER_RTM, "gr"),
 #   endif
 };
 
@@ -351,8 +370,9 @@ std::vector<xmrig::Algorithm> xmrig::Algorithm::all(const std::function<bool(con
         CN_UPX2,
         RX_0, RX_WOW, RX_ARQ, RX_GRAFT, RX_SFX, RX_KEVA,
         AR2_CHUKWA, AR2_CHUKWA_V2, AR2_WRKZ,
-        ASTROBWT_DERO,
-        KAWPOW_RVN
+        ASTROBWT_DERO, ASTROBWT_DERO_2,
+        KAWPOW_RVN,
+        GHOSTRIDER_RTM
     };
 
     Algorithms out;
