@@ -22,6 +22,7 @@
 
 
 #include "core/Miner.h"
+#include "core/Taskbar.h"
 #include "3rdparty/rapidjson/document.h"
 #include "backend/common/Hashrate.h"
 #include "backend/cpu/Cpu.h"
@@ -63,6 +64,11 @@
 
 #ifdef XMRIG_ALGO_ASTROBWT
 #   include "crypto/astrobwt/AstroBWT.h"
+#endif
+
+
+#ifdef XMRIG_ALGO_GHOSTRIDER
+#   include "crypto/ghostrider/ghostrider.h"
 #endif
 
 
@@ -281,9 +287,11 @@ public:
 
     void printHashrate(bool details)
     {
-        char num[16 * 4] = { 0 };
+        char num[16 * 5] = { 0 };
         double speed[3]  = { 0.0 };
         uint32_t count   = 0;
+
+        double avg_hashrate = 0.0;
 
         for (auto backend : backends) {
             const auto hashrate = backend->hashrate();
@@ -293,6 +301,8 @@ public:
                 speed[0] += hashrate->calc(Hashrate::ShortInterval);
                 speed[1] += hashrate->calc(Hashrate::MediumInterval);
                 speed[2] += hashrate->calc(Hashrate::LargeInterval);
+
+                avg_hashrate += hashrate->average();
             }
 
             backend->printHashrate(details);
@@ -312,12 +322,22 @@ public:
             h = "MH/s";
         }
 
-        LOG_INFO("%s " WHITE_BOLD("speed") " 10s/60s/15m " CYAN_BOLD("%s") CYAN(" %s %s ") CYAN_BOLD("%s") " max " CYAN_BOLD("%s %s"),
+        char avg_hashrate_buf[64];
+        avg_hashrate_buf[0] = '\0';
+
+#       ifdef XMRIG_ALGO_GHOSTRIDER
+        if (algorithm.family() == Algorithm::GHOSTRIDER) {
+            snprintf(avg_hashrate_buf, sizeof(avg_hashrate_buf), " avg " CYAN_BOLD("%s %s"), Hashrate::format(avg_hashrate * scale, num + 16 * 4, 16), h);
+        }
+#       endif
+
+        LOG_INFO("%s " WHITE_BOLD("speed") " 10s/60s/15m " CYAN_BOLD("%s") CYAN(" %s %s ") CYAN_BOLD("%s") " max " CYAN_BOLD("%s %s") "%s",
                  Tags::miner(),
-                 Hashrate::format(speed[0] * scale,                 num,          sizeof(num) / 4),
-                 Hashrate::format(speed[1] * scale,                 num + 16,     sizeof(num) / 4),
-                 Hashrate::format(speed[2] * scale,                 num + 16 * 2, sizeof(num) / 4), h,
-                 Hashrate::format(maxHashrate[algorithm] * scale,   num + 16 * 3, sizeof(num) / 4), h
+                 Hashrate::format(speed[0] * scale,                 num,          16),
+                 Hashrate::format(speed[1] * scale,                 num + 16,     16),
+                 Hashrate::format(speed[2] * scale,                 num + 16 * 2, 16), h,
+                 Hashrate::format(maxHashrate[algorithm] * scale,   num + 16 * 3, 16), h,
+                 avg_hashrate_buf
                  );
 
 #       ifdef XMRIG_FEATURE_BENCHMARK
@@ -330,6 +350,11 @@ public:
 
 #   ifdef XMRIG_ALGO_RANDOMX
     inline bool initRX() const { return Rx::init(job, controller->config()->rx(), controller->config()->cpu()); }
+#   endif
+
+
+#   ifdef XMRIG_ALGO_GHOSTRIDER
+    inline void initGhostRider() const { ghostrider::benchmark(); }
 #   endif
 
 
@@ -348,6 +373,8 @@ public:
     String userJobId;
     Timer *timer        = nullptr;
     uint64_t ticks      = 0;
+
+    Taskbar m_taskbar;
 };
 
 
@@ -475,6 +502,7 @@ void xmrig::Miner::execCommand(char command)
 void xmrig::Miner::pause()
 {
     d_ptr->active = false;
+    d_ptr->m_taskbar.setActive(false);
 
     Nonce::pause(true);
     Nonce::touch();
@@ -494,6 +522,7 @@ void xmrig::Miner::setEnabled(bool enabled)
     }
 
     d_ptr->enabled = enabled;
+    d_ptr->m_taskbar.setEnabled(enabled);
 
     if (enabled) {
         LOG_INFO("%s " GREEN_BOLD("resumed"), Tags::miner());
@@ -524,7 +553,13 @@ void xmrig::Miner::setJob(const Job &job, bool donate)
 
 #   ifdef XMRIG_ALGO_RANDOMX
     if (job.algorithm().family() == Algorithm::RANDOM_X && !Rx::isReady(job)) {
-        stop();
+        if (d_ptr->algorithm != job.algorithm()) {
+            stop();
+        }
+        else {
+            Nonce::pause(true);
+            Nonce::touch();
+        }
     }
 #   endif
 
@@ -548,9 +583,16 @@ void xmrig::Miner::setJob(const Job &job, bool donate)
     constexpr const bool ready = true;
 #   endif
 
+#   ifdef XMRIG_ALGO_GHOSTRIDER
+    if (job.algorithm().family() == Algorithm::GHOSTRIDER) {
+        d_ptr->initGhostRider();
+    }
+#   endif
+
     mutex.unlock();
 
     d_ptr->active = true;
+    d_ptr->m_taskbar.setActive(true);
 
     if (ready) {
         d_ptr->handleJobChange();
